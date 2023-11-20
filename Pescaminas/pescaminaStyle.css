@@ -1,0 +1,18 @@
+/*se usara para hcer ver bonito el pescaminas*/
+#iniciarJuego{
+    padding: 10px 20px;
+    background-color: #4caf9e;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+#celda{
+    border: red 5px solid;
+}
+#tabla{
+    border: black 5px solid;
+}
+#botonInicio{
+    padding: 10px;
+}
