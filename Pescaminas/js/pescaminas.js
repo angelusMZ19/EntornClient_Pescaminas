@@ -1,6 +1,8 @@
+let fil;
+let col;
 function iniciarPartida() {
-    let fil = prompt("Ingrese la fila de la tabla");
-    let col = prompt("Ingrese la tabla de la tabla");
+    fil = prompt("Ingrese la fila de la tabla");
+    col = prompt("Ingrese la tabla de la tabla");
     if (fil < 10) {
         fil = 10;
     }
@@ -30,7 +32,7 @@ function crearTaulell(fil, col) {
         
         for (let j=0; j < col; j++) {
             // numCasilla= i +j -1;
-            tabla += `<td id="${i}-${j}" data-mina="false" data-num-minas=0 onclick="obreCasella(${i},${j})"><img src="img/fons20px.jpg" id="${i},${j}"/></td>`;
+            tabla += `<td id="${i}-${j}" data-mina="false" data-abierta="false" data-num-minas='0' onclick="obreCasella(${i},${j})"><img src="img/fons20px.jpg" id="${i},${j}"/></td>`;
         }
         tabla += '</tr>';
     }
@@ -38,28 +40,50 @@ function crearTaulell(fil, col) {
     document.getElementById("taulell").innerHTML = tabla;
     return tabla;
 }
+
 function obreCasella(i, j) {
     let numCasilla = document.getElementById(`${i}-${j}`);
-    if (numCasilla.dataset.abierta === "true") {
-        return; // Evita abrir una casilla ya abierta
-    }
-
-    numCasilla.dataset.abierta = "true";
-
+    numCasilla.innerHTML = " ";
+   
     if (numCasilla.dataset.mina === "true") {
         numCasilla.innerHTML = `<img src="img/mina20px.jpg" id="${i},${j}"/>`;
         setTimeout(function() {
             alert("¡Has perdido! Se encontró una mina.")}, 500);
        muestraMinas();
     } else {
-        numCasilla.innerHTML = `<img src="img/empty.png" id="${i},${j}"/>`;
-        reveal(i, j);
+        if(numCasilla.dataset.numMinas=='0'){
+            reveal();
+        }else{
+            numCasilla.innerHTML=numCasilla.dataset.numMinas;
+        }
     }
+}
+
+
+function reveal(i, j) {
+    let casella = document.getElementById(`${i}-${j}`);
+    if(casella==null || casella.dataset.abierta=="true"){
+        return;
+    }
+    casella.dataset.abierta="true"
+    if(casella.dataset.numMinas=='0'){
+        casella.innerHTML=" ";
+        for (let k = i - 1; k <= i + 1; k++) {
+            for (let l = j - 1; l <= j + 1; l++) {
+                if (k >= 0 && k < fil && l >= 0 && l < col) {
+                    reveal(k, l);
+                }
+            }
+        }
+    }else{
+        casella.innerHTML=casella.dataset.numMinas;
+    }
+    
 }
 
 function esMina(i, j) {
     let casilla = document.getElementById(`${i}-${j}`);
-    return casilla.dataset.mina === "true";
+    return casilla.dataset.mina == "true";
 }
 
 function muestraMinas() {
@@ -84,40 +108,31 @@ function setMines(fil, col){
         let numCasilla= document.getElementById(`${row}-${colum}`);
         numCasilla.dataset.mina="true";
     }
-    console.log(minas);
 }
 //recien agregado
 function calcularAdyacentes(fil, col) {
     for (let i = 0; i < fil; i++) {
         for (let j = 0; j < col; j++) {
+            let minasAdyacentes=0;
             if (!esMina(i, j)) {
-                let numMinasAdyacentes = contarMinasAdyacentes(i, j);
-                setMinesAdjacents(i, j, numMinasAdyacentes);
-            }
-        }
-    }
-}
-
-function contarMinasAdyacentes(fil, col) {
-    let minasAdyacentes = 0;
-
-    for (let k = fil - 1; k <= fil + 1; k++) {
-        if (k >= 0 && k < fil) {
-            for (let l = col - 1; l <= col + 1; l++) {
-                if (l >= 0 && l < col && !(k === fil && l === col)) {
-                    if (esMina(k, l)) {
-                        minasAdyacentes++;
+                for (let k = i - 1; k <= i + 1; k++) {
+                    for (let l = j - 1; l <= j + 1; l++) {
+                        if (k >= 0 && k < fil && l >= 0 && l < col) {
+                            if (esMina(k, l)) {
+                                minasAdyacentes++;
+                            }
+                        }
                     }
                 }
             }
+            setMinesAdjacents(i, j, minasAdyacentes)
         }
     }
-    return minasAdyacentes;
 }
 
-function setMinesAdjacents(i, j, nMinesAdyacentes) {
+function setMinesAdjacents(i, j, minasAdyacentes) {
     let casilla = document.getElementById(`${i}-${j}`);
-    casilla.dataset.numMinas = nMinesAdyacentes;
+    casilla.dataset.numMinas = minasAdyacentes;
     setNumColor(casilla);
 }
 
