@@ -1,8 +1,7 @@
 let fil;
 let col;
 let minas;
-let opened = 0;
-let sinMinas;
+
 function iniciarPartida() {
     fil = prompt("Ingrese la fila de la tabla");
     col = prompt("Ingrese la tabla de la tabla");
@@ -18,8 +17,6 @@ function iniciarPartida() {
     if (col > 30) {
         col = 30;
     }
-    sinMinas = fil * col - minas;
-    opened = 0;
 
     crearTaulell(fil, col);
     setMines(fil, col);
@@ -45,10 +42,6 @@ function crearTaulell(fil, col) {
 function obreCasella(i, j) {
     let numCasilla = document.getElementById(`${i}-${j}`);
 
-    if (numCasilla.dataset.abierta == "true") {
-        return;  // No hacer nada si la casilla ya está abierta
-    }
-    numCasilla.innerHTML = " ";
     if (numCasilla.dataset.mina == "true") {
         numCasilla.innerHTML = `<img src="img/mina20px.jpg" id="${i},${j}"/>`;
         setTimeout(function () {
@@ -56,22 +49,25 @@ function obreCasella(i, j) {
         }, 500);
         muestraMinas();
     } else {
-        if (numCasilla.dataset.numMinas == '0') {
+        if (numCasilla.dataset.numMinas =='0') {
             reveal(i, j);
         } else {
+            numCasilla.dataset.abierta = "true";
             numCasilla.innerHTML = numCasilla.dataset.numMinas;
+            
         }
-        numCasilla.dataset.abierta = "true";
-        opened++;
-        if (opened == sinMinas) {
-            verificarGanador();
-        }
+    }
+        
+    if(verificarGanador()){
+        alert("¡Has ganado!");
+        return
     }
 }
 
+
 function reveal(i, j) {
     let casella = document.getElementById(`${i}-${j}`);
-    if(casella==null || casella.dataset.abierta=="true"){
+    if(casella.dataset.abierta=="true"){
         return;
     }
     casella.dataset.abierta="true"
@@ -79,9 +75,7 @@ function reveal(i, j) {
         casella.innerHTML=`<img src="img/empty.png" id="${i},${j}"/>`;
         for (let k = i - 1; k <= i + 1; k++) {
             for (let l = j - 1; l <= j + 1; l++) {
-                if (k >= 0 && k < fil && l >= 0 && l < col) {
-                    reveal(k, l);
-                }
+                reveal(k, l);
             }
         }
     }else{
@@ -106,13 +100,13 @@ function muestraMinas() {
     }
 }
 
-function setMines() {//evita que se reasigne una mina a una casilla que ya tiene
+function setMines() {
     minas = Math.floor((fil * col) * 0.17);
     console.log(minas);
     for (let a = 0; a < minas; a++) {
         let row = Math.floor(Math.random() * fil);
         let colum = Math.floor(Math.random() * col);
-        while (document.getElementById(`${row}-${colum}`).dataset.mina === "true") {
+        while (document.getElementById(`${row}-${colum}`).dataset.mina== "true") {
             row = Math.floor(Math.random() * fil);
             colum = Math.floor(Math.random() * col);
         }
@@ -165,21 +159,18 @@ function setNumColor(casilla) {
             break;
     }
 }
-
 function verificarGanador() {
-    let todasAbiertas = true;
-
+    let ganar= true;
     for (let i = 0; i < fil; i++) {
         for (let j = 0; j < col; j++) {
-            if (esMina(i, j) && document.getElementById(`${i}-${j}`).dataset.abierta !== "true") {
-                todasAbiertas = false;
-                break;
+            let numCasilla = document.getElementById(`${i}-${j}`);
+
+            if (esMina(i,j))continue;
+            if(numCasilla.dataset.abierta == "false") {
+                ganar=false;
             }
         }
     }
-    if (todasAbiertas) {
-        setTimeout(function () {
-            alert("¡Felicidades! Has ganado.");
-        }, 500);
-    }
+    return ganar
 }
+ 
